@@ -4,9 +4,6 @@ import cv2
 import time
 import mediapipe as mp
 
-
-
-
 class handDetector():
     def __init__(self, mode=False,maxHands=2,detectionConf=0.5,trackConf=0.5):
         self.mode = mode
@@ -62,7 +59,7 @@ def main():
         finalImg = detector.findHands(img)
         lmList = detector.findPosition(finalImg)
         if len(lmList)!=0:
-            if(lmList[4][1]<lmList[3][1] & lmList[3][1]<lmList[2][1] & lmList[2][1]<lmList[1][1]):
+            if((lmList[4][1]<lmList[3][1] & lmList[3][1]<lmList[2][1] & lmList[2][1]<lmList[1][1]) | (lmList[4][1]>lmList[3][1] & lmList[3][1]>lmList[2][1] & lmList[2][1]>lmList[1][1])):
                 # print(lmList[4][1],lmList[3][1],lmList[2][1],lmList[1][1])
                 count[0] = 1
             else:

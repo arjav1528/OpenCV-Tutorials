@@ -1,0 +1,43 @@
+from typing import Sequence
+
+import cv2
+import time
+import mediapipe as mp
+
+cap = cv2.VideoCapture(0)
+
+mpHands = mp.solutions.hands
+
+hands = mpHands.Hands()
+
+prevTime = time.time()
+
+
+
+while True:
+    currTime = time.time()
+    fps = int(1/(currTime-prevTime))
+
+    success, img = cap.read()
+    imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    results = hands.process(imgRGB)
+
+    text = f"FPS : {fps}"
+    position = (50, 50)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 1
+    color = (255, 0, 0)
+    thickness = 2
+
+    cv2.putText(img, text, position, font, font_scale, color, thickness)
+
+    cv2.imshow("image", img)
+
+    prevTime = currTime
+
+
+    if(cv2.waitKey(1) == ord('q')):
+        break
+
+
+cv2.destroyAllWindows()

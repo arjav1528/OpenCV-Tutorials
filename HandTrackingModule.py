@@ -4,55 +4,78 @@ import cv2
 import time
 import mediapipe as mp
 
-cap = cv2.VideoCapture(0)
-
-mpHands = mp.solutions.hands
-
-hands = mpHands.Hands()
-mpDraw = mp.solutions.drawing_utils
-
-prevTime = time.time()
 
 
 
-while True:
-    currTime = time.time()
-    fps = int(1/(currTime-prevTime))
+class handDetector():
+    def __init__(self, mode=False,maxHands=2,detectionConf=0.5,trackConf=0.5):
+        self.mode = mode
+        self.maxHands = 2
+        self.detectionConf = detectionConf
+        self.trackConf = trackConf
+        self.mpHands = mp.solutions.hands
+        self.hands = self.mpHands.Hands(self.mode,self.maxHands,min_detection_confidence=self.detectionConf,min_tracking_confidence=self.trackConf)
+        self.mpDraw = mp.solutions.drawing_utils
 
-    success, img = cap.read()
-    imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    results = hands.process(imgRGB)
+    def findHands(self,img,draw=True):
+        imgRGB = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+        self.result = self.hands.process(imgRGB)
 
-    text = f"FPS : {fps}"
-    position = (50, 50)
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 1
-    color = (255, 0, 0)
-    thickness = 2
+        if self.result.multi_hand_landmarks:
+            for handLms in self.result.multi_hand_landmarks:
+                if draw:
+                    self.mpDraw.draw_landmarks(img,handLms,self.mpHands.HAND_CONNECTIONS)
 
-    cv2.putText(img, text, position, font, font_scale, color, thickness)
+        return img
 
-
-
-    # print(results.multi_hand_landmarks)
-    if results.multi_hand_landmarks:
-        for handLms in results.multi_hand_landmarks:
-            for id,lm in enumerate(handLms.landmark):
+    def findPosition(self,img, handNo=0,draw=True):
+        lmList = []
+        h,w,c = img.shape
+        if self.result.multi_hand_landmarks:
+            myHand = self.result.multi_hand_landmarks[handNo]
+            for id, lm in enumerate(myHand.landmark):
                 h,w,c = img.shape
-                cx,cy = int(lm.x*w),int(lm.y*h)
-                print(id,cx,cy)
-                if id == 0:
-                    cv2.circle(img,(cx,cy),20,(255,0,255),-1)
+                cx, cy = int(lm.x*w), int(lm.y*h)
+                lmList.append([id,cx,cy])
+                if draw:
+                    cv2.circle(img,(cx,cy),5,(255,0,255),cv2.FILLED)
+
+        return lmList
+
+def main():
+    prevTime = time.time()
+    cap = cv2.VideoCapture(0)
+
+    detector = handDetector()
+
+    while True:
+        currTime = time.time()
+        fps = int(1/(currTime-prevTime))
+        prevTime = currTime
+        success, img = cap.read()
+        img = cv2.flip(img,1)
+        cv2.putText(img,str(fps),(10,70),cv2.FONT_HERSHEY_PLAIN,3,(255,0,255),3)
 
 
-            mpDraw.draw_landmarks(img, handLms, mpHands.HAND_CONNECTIONS)
+        finalImg = detector.findHands(img)
+        lmList = detector.findPosition(finalImg)
+        if len(lmList)!=0:
+            print(lmList[4])
 
-    cv2.imshow("image", img)
-    prevTime = currTime
+        cv2.imshow("Image", finalImg)
+
+        if(cv2.waitKey(1) == ord('q')):
+            break
 
 
-    if(cv2.waitKey(1) == ord('q')):
-        break
+    cv2.destroyAllWindows()
 
 
-cv2.destroyAllWindows()
+
+
+
+
+
+
+if __name__ == "__main__":
+    main()

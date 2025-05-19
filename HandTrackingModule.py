@@ -28,36 +28,28 @@ class handDetector():
     def findPosition(self,img, handNo=0,draw=True):
         lmList = []
         h,w,c = img.shape
+        xList = []
+        yList = []
+        bbox = []
         if self.result.multi_hand_landmarks:
             myHand = self.result.multi_hand_landmarks[handNo]
             for id, lm in enumerate(myHand.landmark):
                 h,w,c = img.shape
                 cx, cy = int(lm.x*w), int(lm.y*h)
+                xList.append(cx)
+                yList.append(cy)
                 lmList.append([id,cx,cy])
                 if draw:
                     cv2.circle(img,(cx,cy),5,(255,0,255),cv2.FILLED)
+                bbox = [min(xList),min(yList),max(xList),max(yList)]
 
-        return lmList
+        # bbox = [min(xList),min(yList),max(xList),max(yList)]
 
-def main():
-    prevTime = time.time()
-    cap = cv2.VideoCapture(0)
-
-    detector = handDetector()
-
-    count = [0,0,0,0,0]
-
-    while True:
-        currTime = time.time()
-        fps = int(1/(currTime-prevTime))
-        prevTime = currTime
-        success, img = cap.read()
-        img = cv2.flip(img,1)
-        cv2.putText(img,f"FPS : {fps}",(10,70),cv2.FONT_HERSHEY_PLAIN,3,(255,0,255),3)
-
-
-        finalImg = detector.findHands(img)
-        lmList = detector.findPosition(finalImg)
+        return bbox,lmList
+    
+    def fingersUp(self,img):
+        count = [0,0,0,0,0]
+        bbox,lmList = self.findPosition(img)
         if len(lmList)!=0:
             if((lmList[4][1]<lmList[3][1] & lmList[3][1]<lmList[2][1] & lmList[2][1]<lmList[1][1]) | (lmList[4][1]>lmList[3][1] & lmList[3][1]>lmList[2][1] & lmList[2][1]>lmList[1][1])):
                 # print(lmList[4][1],lmList[3][1],lmList[2][1],lmList[1][1])
@@ -81,12 +73,39 @@ def main():
             else:
                 count[4] = 0
 
+        return count
+
+
+def main():
+    prevTime = time.time()
+    cap = cv2.VideoCapture(0)
+
+    detector = handDetector()
+
+    # count = [0,0,0,0,0]
+
+    while True:
+        currTime = time.time()
+        fps = int(1/(currTime-prevTime))
+        prevTime = currTime
+        success, img = cap.read()
+        img = cv2.flip(img,1)
+        cv2.putText(img,f"FPS : {fps}",(10,70),cv2.FONT_HERSHEY_PLAIN,3,(255,0,255),3)
+
+
+        finalImg = detector.findHands(img)
+        bbox,lmList = detector.findPosition(finalImg)
+        count = detector.fingersUp(img=img)
+
+        
+
         print(sum(count))
         cv2.putText(img,f"Count : {sum(count)}",(10,150),cv2.FONT_HERSHEY_PLAIN,3,(255,0,255),3)
 
         cv2.imshow("Image", finalImg)
 
         if(cv2.waitKey(1) == ord('q')):
+            print(bbox)
             break
 
 

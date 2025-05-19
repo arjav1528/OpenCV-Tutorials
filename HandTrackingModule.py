@@ -51,31 +51,30 @@ class handDetector():
 
         return bbox,lmList
     
-    def fingersUp(self,img):
-        count = [0,0,0,0,0]
-        bbox,lmList = self.findPosition(img)
-        if len(lmList)!=0:
-            if((lmList[4][1]<lmList[3][1] & lmList[3][1]<lmList[2][1] & lmList[2][1]<lmList[1][1]) | (lmList[4][1]>lmList[3][1] & lmList[3][1]>lmList[2][1] & lmList[2][1]>lmList[1][1])):
-                # print(lmList[4][1],lmList[3][1],lmList[2][1],lmList[1][1])
+    def fingersUp(self, img):
+        count = [0, 0, 0, 0, 0]
+        bbox, lmList = self.findPosition(img, draw=False)
+        if len(lmList) != 0:
+            # Thumb
+            if ((lmList[4][1] < lmList[3][1] and lmList[3][1] < lmList[2][1] and lmList[2][1] < lmList[1][1]) or 
+                (lmList[4][1] > lmList[3][1] and lmList[3][1] > lmList[2][1] and lmList[2][1] > lmList[1][1])):
                 count[0] = 1
-            else:
-                count[0] = 0
-            if(lmList[8][2] < lmList[7][2] & lmList[7][2] < lmList[6][2] & lmList[6][2] < lmList[5][2]):
+            
+            # Index finger
+            if lmList[8][2] < lmList[7][2] and lmList[7][2] < lmList[6][2] and lmList[6][2] < lmList[5][2]:
                 count[1] = 1
-            else:
-                count[1] = 0
-            if(lmList[12][2] < lmList[11][2] & lmList[11][2] < lmList[10][2] & lmList[10][2] < lmList[9][2]):
+                
+            # Middle finger
+            if lmList[12][2] < lmList[11][2] and lmList[11][2] < lmList[10][2] and lmList[10][2] < lmList[9][2]:
                 count[2] = 1
-            else:
-                count[2] = 0
-            if (lmList[16][2] < lmList[15][2] & lmList[15][2] < lmList[14][2] & lmList[14][2] < lmList[13][2]):
+                
+            # Ring finger
+            if lmList[16][2] < lmList[15][2] and lmList[15][2] < lmList[14][2] and lmList[14][2] < lmList[13][2]:
                 count[3] = 1
-            else:
-                count[3] = 0
-            if (lmList[20][2] < lmList[19][2] & lmList[19][2] < lmList[18][2] & lmList[18][2] < lmList[17][2]):
+                
+            # Pinky
+            if lmList[20][2] < lmList[19][2] and lmList[19][2] < lmList[18][2] and lmList[18][2] < lmList[17][2]:
                 count[4] = 1
-            else:
-                count[4] = 0
 
         return count
 

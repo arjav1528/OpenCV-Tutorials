@@ -42,8 +42,12 @@ class handDetector():
                 if draw:
                     cv2.circle(img,(cx,cy),5,(255,0,255),cv2.FILLED)
                 bbox = [min(xList),min(yList),max(xList),max(yList)]
+            
+            if draw:
+                cv2.rectangle(img,(min(xList)-20,min(yList)-20),(max(xList)+20,max(yList)+20),(255,255,255),2)
 
         # bbox = [min(xList),min(yList),max(xList),max(yList)]
+        
 
         return bbox,lmList
     

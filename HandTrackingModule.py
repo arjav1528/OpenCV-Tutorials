@@ -4,7 +4,7 @@ import cv2
 import time
 import mediapipe as mp
 
-class handDetector():
+class HandTrackingModule():
     def __init__(self, mode=False,maxHands=2,detectionConf=0.5,trackConf=0.5):
         self.mode = mode
         self.maxHands = 2
@@ -27,7 +27,7 @@ class handDetector():
 
     def findPosition(self,img, handNo=0,draw=True):
         lmList = []
-        h,w,c = img.shape
+        h,w,c = img.shape[0],img.shape[1],img.shape[2]
         xList = []
         yList = []
         bbox = []
@@ -51,7 +51,7 @@ class handDetector():
 
         return bbox,lmList
     
-    def fingersUp(self, img):
+    def fingersUp(self, img,draw=True):
         count = [0, 0, 0, 0, 0]
         bbox, lmList = self.findPosition(img, draw=False)
         if len(lmList) != 0:
@@ -75,15 +75,18 @@ class handDetector():
             # Pinky
             if lmList[20][2] < lmList[19][2] and lmList[19][2] < lmList[18][2] and lmList[18][2] < lmList[17][2]:
                 count[4] = 1
+        
+        if draw:
+            img = cv2.putText(img,f"Count : {sum(count)}",(10,150),cv2.FONT_HERSHEY_PLAIN,3,(255,0,255),3)
 
-        return count
+        return count,img
 
 
 def main():
     prevTime = time.time()
     cap = cv2.VideoCapture(0)
 
-    detector = handDetector()
+    detector = HandTrackingModule()
 
     # count = [0,0,0,0,0]
 
@@ -98,14 +101,14 @@ def main():
 
         finalImg = detector.findHands(img)
         bbox,lmList = detector.findPosition(finalImg)
-        count = detector.fingersUp(img=img)
+        count,image = detector.fingersUp(img=img)
 
         
 
-        print(sum(count))
-        cv2.putText(img,f"Count : {sum(count)}",(10,150),cv2.FONT_HERSHEY_PLAIN,3,(255,0,255),3)
+        # print(sum(count))
+        # cv2.putText(img,f"Count : {sum(count)}",(10,150),cv2.FONT_HERSHEY_PLAIN,3,(255,0,255),3)
 
-        cv2.imshow("Image", finalImg)
+        cv2.imshow("Image", image)
 
         if(cv2.waitKey(1) == ord('q')):
             print(bbox)

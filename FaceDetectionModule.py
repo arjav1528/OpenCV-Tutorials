@@ -30,6 +30,8 @@ class FaceDetectionModule:
                 score = round(detection.score[0]*100,2)
 
                 cv2.putText(image,f"{score}%",(x,ymin),cv2.FONT_HERSHEY_COMPLEX,1,(255,0,255),1)
+        
+        return image
 
 def main():
     cap = cv2.VideoCapture(0)
